@@ -1,0 +1,184 @@
+# Archivo: pieces.py
+# Descripción: Define la clase base Piece y las clases para cada tipo de pieza.
+import pygame
+import os
+from config import SQUARE_SIZE, ASSETS_PATH, TOP_UI_HEIGHT
+
+class Piece:
+    # Diccionario para almacenar las imágenes ya cargadas y evitar lecturas de disco repetidas.
+    # Es un atributo de clase, compartido por todas las instancias.
+    _images = {}
+
+    """Clase base para todas las piezas de ajedrez."""
+    def __init__(self, row, col, color, name):
+        self.row = row
+        self.col = col
+        self.color = color
+        self.name = name
+        self.has_moved = False
+        self.ability = None # Atributo para almacenar la habilidad especial
+        self.image = None
+        self._load_image()
+        self.rect = self.image.get_rect()
+        self.calculate_pixel_pos()
+
+    def _load_image(self):
+        """Carga la imagen de la pieza desde la carpeta de assets."""
+        image_key = f"{self.color}_{self.name}"
+        if image_key not in Piece._images:
+            # Si la imagen no ha sido cargada, la carga y la guarda en el diccionario.
+            image_path = os.path.join(ASSETS_PATH, f"{image_key}.png")
+            original_image = pygame.image.load(image_path)
+            Piece._images[image_key] = pygame.transform.scale(original_image, (SQUARE_SIZE, SQUARE_SIZE))
+        self.image = Piece._images[image_key]
+
+    def calculate_pixel_pos(self):
+        """Calcula la posición en píxeles de la esquina superior izquierda de la casilla."""
+        self.rect.x = self.col * SQUARE_SIZE
+        self.rect.y = self.row * SQUARE_SIZE + TOP_UI_HEIGHT
+
+    def draw(self, screen):
+        """Dibuja la pieza en la pantalla."""
+        # Dibuja un aura si la pieza tiene una habilidad
+        if self.ability:
+            aura_color = (255, 223, 0, 100) # Amarillo dorado semi-transparente
+            aura_surface = pygame.Surface((SQUARE_SIZE, SQUARE_SIZE), pygame.SRCALPHA)
+            pygame.draw.circle(aura_surface, aura_color, (SQUARE_SIZE // 2, SQUARE_SIZE // 2), SQUARE_SIZE // 2)
+            screen.blit(aura_surface, self.rect.topleft)
+
+        screen.blit(self.image, self.rect)
+
+    def get_valid_moves(self, board):
+        """
+        Devuelve una lista de movimientos válidos (fila, columna) para la pieza.
+        Este método será sobrescrito por cada pieza específica.
+        """
+        return []
+
+# --- Clases para cada pieza ---
+
+class Pawn(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'pawn')
+
+    def get_valid_moves(self, board):
+        # Si el peón tiene la habilidad 'omni_directional_pawn'
+        if self.ability == 'omni_directional_pawn':
+            moves = []
+            # Movimiento de 1 paso en las 8 direcciones
+            for dr in [-1, 0, 1]:
+                for dc in [-1, 0, 1]:
+                    if dr == 0 and dc == 0:
+                        continue
+                    r, c = self.row + dr, self.col + dc
+                    if 0 <= r < 8 and 0 <= c < 8 and (board[r][c] is None or board[r][c].color != self.color):
+                        moves.append((r, c))
+            return moves
+
+        moves = []
+        direction = -1 if self.color == 'white' else 1
+
+        # Movimiento de 1 casilla hacia adelante
+        if 0 <= self.row + direction < 8 and board[self.row + direction][self.col] is None:
+            moves.append((self.row + direction, self.col))
+            # Movimiento de 2 casillas en el primer turno
+            if not self.has_moved and board[self.row + 2 * direction][self.col] is None:
+                moves.append((self.row + 2 * direction, self.col))
+
+        # Capturas en diagonal
+        for d_col in [-1, 1]:
+            if 0 <= self.col + d_col < 8:
+                target_piece = board[self.row + direction][self.col + d_col]
+                if target_piece is not None and target_piece.color != self.color:
+                    moves.append((self.row + direction, self.col + d_col))
+        return moves
+
+class Rook(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'rook')
+
+    def get_valid_moves(self, board):
+        moves = []
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] # Derecha, Izquierda, Abajo, Arriba
+        for dr, dc in directions:
+            for i in range(1, 8):
+                r, c = self.row + dr * i, self.col + dc * i
+                if not (0 <= r < 8 and 0 <= c < 8):
+                    break
+                target = board[r][c]
+                if target is None:
+                    moves.append((r, c))
+                elif target.color != self.color:
+                    moves.append((r, c))
+                    break
+                else: # Pieza aliada
+                    break
+        return moves
+
+class Knight(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'knight')
+
+    def get_valid_moves(self, board):
+        moves = []
+        possible_moves = [
+            (2, 1), (2, -1), (-2, 1), (-2, -1),
+            (1, 2), (1, -2), (-1, 2), (-1, -2)
+        ]
+        for dr, dc in possible_moves:
+            r, c = self.row + dr, self.col + dc
+            if 0 <= r < 8 and 0 <= c < 8:
+                target = board[r][c]
+                if target is None or target.color != self.color:
+                    moves.append((r, c))
+        return moves
+
+class Bishop(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'bishop')
+
+    def get_valid_moves(self, board):
+        moves = []
+        directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)] # Diagonales
+        for dr, dc in directions:
+            for i in range(1, 8):
+                r, c = self.row + dr * i, self.col + dc * i
+                if not (0 <= r < 8 and 0 <= c < 8):
+                    break
+                target = board[r][c]
+                if target is None:
+                    moves.append((r, c))
+                elif target.color != self.color:
+                    moves.append((r, c))
+                    break
+                else: # Pieza aliada
+                    break
+        return moves
+
+class Queen(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'queen')
+
+    def get_valid_moves(self, board):
+        # La reina combina los movimientos de la torre y el alfil
+        rook_moves = Rook.get_valid_moves(self, board)
+        bishop_moves = Bishop.get_valid_moves(self, board)
+        return rook_moves + bishop_moves
+
+class King(Piece):
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color, 'king')
+
+    def get_valid_moves(self, board):
+        moves = []
+        possible_moves = [
+            (0, 1), (0, -1), (1, 0), (-1, 0),
+            (1, 1), (1, -1), (-1, 1), (-1, -1)
+        ]
+        for dr, dc in possible_moves:
+            r, c = self.row + dr, self.col + dc
+            if 0 <= r < 8 and 0 <= c < 8:
+                target = board[r][c]
+                if target is None or target.color != self.color:
+                    moves.append((r, c))
+        return moves
