@@ -1,0 +1,1 @@
+# proyectojuego2025chessmagic
