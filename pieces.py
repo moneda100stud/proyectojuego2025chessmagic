@@ -3,6 +3,7 @@
 import pygame
 import os
 from config import SQUARE_SIZE, ASSETS_PATH, TOP_UI_HEIGHT
+import copy
 
 class Piece:
     # Diccionario para almacenar las imágenes ya cargadas y evitar lecturas de disco repetidas.
@@ -57,6 +58,31 @@ class Piece:
         Este método será sobrescrito por cada pieza específica.
         """
         return []
+
+    def __deepcopy__(self, memo):
+        """
+        Implementación personalizada de deepcopy para evitar copiar superficies de Pygame.
+        Crea una nueva instancia de la pieza y copia solo los atributos lógicos.
+        """
+        # Evita la recursión infinita
+        if id(self) in memo:
+            return memo[id(self)]
+        
+        # Crea una nueva instancia de la misma clase sin llamar a __init__
+        cls = self.__class__
+        new_piece = cls.__new__(cls)
+        memo[id(self)] = new_piece
+
+        # Copia los atributos lógicos, pero no los de Pygame (image, rect)
+        for k, v in self.__dict__.items():
+            if k not in ['image', 'rect']:
+                setattr(new_piece, k, copy.deepcopy(v, memo))
+        
+        # Deja los atributos de Pygame como None en la copia
+        new_piece.image = None
+        new_piece.rect = None
+        
+        return new_piece
 
 # --- Clases para cada pieza ---
 

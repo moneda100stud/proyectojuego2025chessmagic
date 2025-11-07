@@ -132,6 +132,19 @@ class Game:
         # Dibuja los componentes de la UI
         draw_top_bar(self.screen, self.game_logic)
         draw_board(self.screen, self.board_colors)
+
+        # Dibuja un aviso si el rey del turno actual está en jaque
+        if self.game_logic.is_in_check(self.game_logic.turn):
+            king = self.game_logic.find_king(self.game_logic.turn)
+            if king:
+                # Crea una superficie para el aura de jaque
+                check_aura_color = (255, 0, 0, 120) # Rojo semi-transparente
+                aura_surface = pygame.Surface((config.SQUARE_SIZE, config.SQUARE_SIZE), pygame.SRCALPHA)
+                pygame.draw.circle(aura_surface, check_aura_color, (config.SQUARE_SIZE // 2, config.SQUARE_SIZE // 2), config.SQUARE_SIZE // 2)
+                
+                # Dibuja el aura en la posición del rey
+                self.screen.blit(aura_surface, king.rect.topleft)
+
         self.board.draw_pieces(self.screen) # Dibuja las piezas sobre el tablero
         draw_ui(self.screen, self.selected_color, self.swatch_rects) # Dibuja la paleta
         self.change_color_button_rect = draw_change_color_button(self.screen) # Dibuja el botón y guarda su rect

@@ -1,6 +1,7 @@
 # Archivo: game_logic.py
 # Descripción: Orquesta las reglas del juego, como turnos, validación de movimientos y condiciones de victoria.
 import random
+import copy
 from pieces import AreaPushKnight
 
 # Lista de habilidades disponibles en el juego
@@ -48,23 +49,60 @@ class GameLogic:
         self.piece_with_ability = chosen_piece
         print(f"¡Habilidad '{chosen_ability}' asignada a {chosen_piece.name} en ({chosen_piece.row}, {chosen_piece.col})!")
 
+    def find_king(self, color, board_state=None):
+        """Encuentra la pieza del rey de un color específico en el tablero."""
+        board_to_check = board_state if board_state is not None else self.board.board
+        for r in range(8):
+            for c in range(8):
+                piece = board_to_check[r][c]
+                if piece and piece.name == 'king' and piece.color == color:
+                    return piece
+        return None
+
+    def is_in_check(self, color, board_state=None):
+        """Verifica si el rey de un color específico está en jaque."""
+        board_to_check = board_state if board_state is not None else self.board.board
+        king = self.find_king(color, board_to_check)
+        if not king:
+            return False # No hay rey, no puede estar en jaque.
+
+        opponent_color = 'white' if color == 'black' else 'black'
+        for r in range(8):
+            for c in range(8):
+                piece = board_to_check[r][c]
+                if piece and piece.color == opponent_color:
+                    # Para el AreaPushKnight, sus movimientos de ataque son los de un caballo normal.
+                    if isinstance(piece, AreaPushKnight):
+                        valid_moves = piece.get_valid_moves(board_to_check)
+                    else:
+                        valid_moves = piece.get_valid_moves(board_to_check)
+                    
+                    if (king.row, king.col) in valid_moves:
+                        return True
+        return False
+
     def is_valid_move(self, piece, target_row, target_col):
         """
         Verifica si un movimiento es válido según las reglas del ajedrez.
-        Por ahora, solo comprueba las reglas de movimiento de la pieza.
-        (Futuro: jaque, jaque mate, etc.)
+        Comprueba las reglas de la pieza y si el movimiento deja al rey en jaque.
         """
         if not piece:
             return False
-        
-        # La habilidad del AreaPushKnight se activa después del movimiento, por lo que sus movimientos son los normales.
-        if isinstance(piece, AreaPushKnight) and piece.ability == 'area_push_knight':
-            valid_moves = piece.get_valid_moves_with_ability(self.board.board)
-            if (target_row, target_col) in valid_moves:
-                piece.activate_ability(self.board.board, target_row, target_col)
-        else:
-            valid_moves = piece.get_valid_moves(self.board.board)
-        return (target_row, target_col) in valid_moves
+
+        valid_moves = piece.get_valid_moves(self.board.board)
+        if (target_row, target_col) not in valid_moves:
+            return False # El movimiento no es legal para la pieza.
+
+        # Simular el movimiento para ver si el rey queda en jaque
+        temp_board = copy.deepcopy(self.board.board)
+        temp_board[piece.row][piece.col] = None
+        temp_board[target_row][target_col] = piece
+
+        # Si después de mover, el rey del jugador actual está en jaque, el movimiento no es válido.
+        if self.is_in_check(piece.color, temp_board):
+            return False
+
+        return True
 
     def activate_ability(self, piece):
         """
