@@ -1,10 +1,11 @@
 # Archivo: game_logic.py
 # Descripción: Orquesta las reglas del juego, como turnos, validación de movimientos y condiciones de victoria.
 import random
+from pieces import AreaPushKnight
 
 # Lista de habilidades disponibles en el juego
 POSSIBLE_ABILITIES = [
-    'omni_directional_pawn', # Un peón que puede moverse un paso en cualquier dirección
+    'omni_directional_pawn', # Un peón que puede moverse un paso en cualquier dirección,
     'double_step_rook',      # Una torre que puede dar un segundo paso después de moverse
     'area_push_knight'       # Un caballo que empuja piezas a su alrededor al aterrizar (ejemplo, no implementado aún)
 ]
@@ -18,10 +19,15 @@ class GameLogic:
         self.turn = 'white'  # Las blancas siempre empiezan
         self.selected_piece = None
         self.piece_with_ability = None
+        self.double_step_rook_moved = None # Para rastrear la torre que acaba de moverse
 
     def next_turn(self):
         """Pasa al siguiente turno."""
+        # Si la torre de doble paso acaba de hacer su segundo movimiento, reseteamos su estado.
+        if self.double_step_rook_moved:
+            self.double_step_rook_moved = None
         self.turn = 'black' if self.turn == 'white' else 'white'
+        
         self.assign_random_ability()
 
     def assign_random_ability(self):
@@ -50,7 +56,14 @@ class GameLogic:
         """
         if not piece:
             return False
-        valid_moves = piece.get_valid_moves(self.board.board)
+        
+        # La habilidad del AreaPushKnight se activa después del movimiento, por lo que sus movimientos son los normales.
+        if isinstance(piece, AreaPushKnight) and piece.ability == 'area_push_knight':
+            valid_moves = piece.get_valid_moves_with_ability(self.board.board)
+            if (target_row, target_col) in valid_moves:
+                piece.activate_ability(self.board.board, target_row, target_col)
+        else:
+            valid_moves = piece.get_valid_moves(self.board.board)
         return (target_row, target_col) in valid_moves
 
     def activate_ability(self, piece):

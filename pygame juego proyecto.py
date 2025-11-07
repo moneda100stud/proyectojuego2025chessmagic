@@ -97,11 +97,23 @@ class Game:
 
                 # 2. Intentar mover la pieza a la nueva casilla (vacía o con enemigo).
                 if self.game_logic.is_valid_move(self.selected_piece, row, col): # (Aquí iría la validación de movimiento de la pieza)
+                    is_double_step_rook = self.selected_piece.ability == 'double_step_rook'
+                    
+                    # Si es el primer movimiento de la torre de doble paso
+                    if is_double_step_rook and self.game_logic.double_step_rook_moved is None:
+                        self.game_logic.double_step_rook_moved = self.selected_piece
+                        self.board.move_piece(self.selected_piece, row, col, keep_ability=True)
+                        # No cambiamos de turno y no deseleccionamos la pieza.
+                        # El jugador debe mover la torre de nuevo.
+                        return
+
+                    # Para cualquier otro movimiento (incluido el segundo de la torre)
                     self.board.move_piece(self.selected_piece, row, col)
                     self.game_logic.next_turn()
-                
-                # Deseleccionar la pieza después del intento de movimiento (sea válido o no).
-                self.selected_piece = None
+                    self.selected_piece = None # Deseleccionar después del movimiento final
+                else:
+                    # Si el movimiento no es válido, deseleccionar la pieza
+                    self.selected_piece = None
             else:
                 # Si no hay pieza seleccionada y se hace clic en una pieza del color del turno, la seleccionamos.
                 if clicked_piece is not None and clicked_piece.color == self.game_logic.turn:
