@@ -2,6 +2,31 @@
 
 Este documento describe la estructura y los componentes necesarios para desarrollar un juego de ajedrez con habilidades especiales para las piezas utilizando la librería Pygame en Python.
 
+## 6. Estado Actual del Proyecto (Fase de Desarrollo Activa)
+
+El juego se encuentra en una etapa funcional donde las mecánicas principales están implementadas y se están añadiendo características avanzadas y habilidades especiales.
+
+### Características Implementadas
+
+- **Motor de Ajedrez Básico:**
+  - Tablero 8x8 completamente funcional.
+  - Movimiento estándar para todas las piezas (Peón, Torre, Caballo, Alfil, Reina, Rey).
+  - Sistema de turnos para Blanco y Negro.
+  - Lógica de captura de piezas.
+- **Sistema de Habilidades Especiales:**
+  - Cada turno, una pieza aleatoria del jugador actual recibe una habilidad especial.
+  - **Habilidades Funcionales:**
+    - `Omni-Directional Pawn`: Un peón que puede moverse un paso en cualquier dirección.
+    - `Double-Step Rook`: Una torre que puede realizar un segundo movimiento inmediatamente después del primero.
+    - `Area Push Knight`: Un caballo que, al aterrizar, empuja las piezas enemigas adyacentes.
+- **Reglas de Ajedrez Avanzadas:**
+  - **Detección de Jaque (Check):** El sistema previene que un jugador realice un movimiento que deje a su propio rey en jaque.
+- **Interfaz de Usuario (UI):**
+  - Visualización del turno actual y de la habilidad activa.
+  - Indicador visual (aura amarilla) sobre la pieza que posee la habilidad.
+  - Indicador visual (aura roja) sobre el rey cuando está en jaque.
+  - Paleta de colores para personalizar la apariencia del tablero en tiempo real.
+
 ## 1. Descripción del Juego
 
 El proyecto consiste en crear un juego de ajedrez por turnos para dos jugadores. La principal característica que lo diferenciará del ajedrez tradicional es que algunas o todas las piezas tendrán "habilidades especiales" que podrán ser activadas durante la partida, añadiendo una capa extra de estrategia.
@@ -74,7 +99,7 @@ Todo lo relacionado con lo que el jugador ve en la pantalla.
 - **Resaltar movimientos:** Dibujar indicadores visuales (círculos, casillas de otro color) para mostrar los movimientos válidos de una pieza seleccionada.
 - **Mostrar información:** Renderizar texto para indicar el turno actual, si hay jaque, o menús para activar habilidades.
 
-## 5. Limitaciones (Versión Inicial)
+## 5. Próximos Pasos y Limitaciones
 
 Es importante tener en cuenta que la primera versión del proyecto se centrará en la mecánica principal y tendrá las siguientes limitaciones:
 
@@ -82,5 +107,6 @@ Es importante tener en cuenta que la primera versión del proyecto se centrará 
 - **Sin modo multijugador en red:** No se implementará la funcionalidad para jugar en línea.
 - **Reglas complejas:** Inicialmente, es posible que no se implementen todas las reglas especiales del ajedrez, como la captura *al paso* (en passant), el enroque o la promoción del peón. Estas se pueden añadir en futuras iteraciones.
 - **No se guardarán partidas:** No habrá una función para guardar el estado de una partida y reanudarla más tarde.
+- **Condiciones de Fin de Partida:** Aún falta por implementar la lógica de Jaque Mate y Tablas (Stalemate).
 
 Con esta estructura, podrás desarrollar tu juego de manera ordenada y modular, lo que facilitará la implementación de nuevas características y la depuración de errores. ¡Mucho éxito con tu proyecto!
