@@ -46,3 +46,24 @@ class Board:
             piece.ability = None
         piece.has_moved = True # Marcar que la pieza ya se ha movido
         piece.calculate_pixel_pos()
+
+    def load_from_state(self, board_state):
+        """Limpia el tablero y lo carga desde una lista de diccionarios."""
+        self.create_board() # Limpia el tablero
+        piece_class_map = {
+            'pawn': Pawn, 'rook': Rook, 'knight': Knight,
+            'bishop': Bishop, 'queen': Queen, 'king': King
+        }
+
+        for r, row_data in enumerate(board_state):
+            for c, piece_data in enumerate(row_data):
+                if piece_data:
+                    piece_type = piece_data['type']
+                    color = piece_data['color']
+                    
+                    # Crear la instancia de la pieza y colocarla en el tablero
+                    piece_class = piece_class_map[piece_type]
+                    new_piece = piece_class(r, c, color)
+                    new_piece.ability = piece_data['ability']
+                    new_piece.has_moved = piece_data['has_moved']
+                    self.board[r][c] = new_piece

@@ -58,6 +58,43 @@ def draw_change_color_button(screen):
     
     return button_rect
 
+def draw_action_buttons(screen):
+    """Dibuja los botones de acción (Guardar, Cargar, Reiniciar) y devuelve sus rectángulos."""
+    buttons = {}
+    font = pg.font.SysFont(None, config.UI_FONT_SIZE - 4)
+    button_texts = ["Guardar", "Cargar", "Reiniciar"]
+    
+    button_width = 50
+    button_height = 30
+    padding = 10
+    
+    # Posicionamos los botones en la esquina superior derecha
+    start_x = config.WIDTH - padding
+    
+    for i, text in enumerate(reversed(button_texts)): # Dibujar de derecha a izquierda
+        button_x = start_x - (i + 1) * (button_width + padding) + padding
+        button_y = (config.TOP_UI_HEIGHT - button_height) // 2
+        
+        rect = pg.Rect(button_x, button_y, button_width, button_height)
+        
+        # Dibujar botón
+        pg.draw.rect(screen, config.UI_FONT_COLOR, rect, border_radius=5)
+        
+        # Dibujar texto
+        text_surface = font.render(text, True, config.BLACK)
+        text_rect = text_surface.get_rect(center=rect.center)
+        screen.blit(text_surface, text_rect)
+        
+        # Guardar el rect del botón con una clave
+        if text == "Guardar":
+            buttons['save'] = rect
+        elif text == "Cargar":
+            buttons['load'] = rect
+        elif text == "Reiniciar":
+            buttons['reset'] = rect
+            
+    return buttons
+
 def draw_ui(screen, selected_color, swatch_rects):
     """Dibuja la interfaz de usuario con la paleta de colores."""
     # Fondo de la UI
@@ -88,3 +125,5 @@ def draw_top_bar(screen, game_logic):
         ability_surface = ability_font.render(ability_text, True, config.ABILITY_FONT_COLOR)
         ability_rect = ability_surface.get_rect(center=(config.WIDTH / 2, config.TOP_UI_HEIGHT * 2 / 3))
         screen.blit(ability_surface, ability_rect)
+    
+    return draw_action_buttons(screen) # Dibuja los botones y devuelve sus rects

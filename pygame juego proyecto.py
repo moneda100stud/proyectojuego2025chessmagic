@@ -6,9 +6,10 @@
 import pygame
 import sys
 import config
-from ui import draw_board, draw_ui, create_palette_rects, draw_top_bar, draw_change_color_button
+from ui import draw_board, draw_ui, create_palette_rects, draw_top_bar, draw_change_color_button, draw_action_buttons
 from board import Board
 from game_logic import GameLogic
+import database
 
 class Game:
     """Clase principal que encapsula la lógica y el estado del juego."""
@@ -35,9 +36,15 @@ class Game:
         # UI: Calcula los rectángulos de la paleta una sola vez
         self.swatch_rects = create_palette_rects()
         self.change_color_button_rect = None # Se calculará en el primer render
+        self.action_buttons_rects = {} # Para guardar, cargar, reiniciar
+
+        # Inicializar la base de datos
+        database.init_db()
 
     def run(self):
         """Inicia y mantiene el bucle principal del juego."""
+        self.game_logic.assign_random_ability() # Asignar habilidad al inicio
+
         while self.running:
             self.handle_events()
             self.update()
@@ -67,6 +74,22 @@ class Game:
                 else: # Si el índice es par (color claro)
                     self.selected_color = config.COLOR_PALETTE[i]
                 return # Termina la función para no procesar el clic en el tablero
+
+        # Comprobar si se hizo clic en los botones de acción (Guardar, Cargar, Reiniciar)
+        if self.action_buttons_rects.get('save') and self.action_buttons_rects['save'].collidepoint(pos):
+            database.save_game_state(self.game_logic, self.board)
+            return
+
+        if self.action_buttons_rects.get('load') and self.action_buttons_rects['load'].collidepoint(pos):
+            if database.load_game_state(self.game_logic, self.board):
+                self.selected_piece = None # Deseleccionar pieza tras cargar
+                # La habilidad se resetea dentro de load_game_state, pero la asignamos al nuevo turno
+                self.game_logic.assign_random_ability()
+            return
+
+        if self.action_buttons_rects.get('reset') and self.action_buttons_rects['reset'].collidepoint(pos):
+            self.reset_game()
+            return
 
         # Comprobar si se hizo clic en el botón "Cambiar Color"
         if self.change_color_button_rect and self.change_color_button_rect.collidepoint(pos):
@@ -125,12 +148,21 @@ class Game:
         # (A implementar en el futuro)
         pass
 
+    def reset_game(self):
+        """Reinicia el juego a su estado inicial."""
+        print("Reiniciando partida...")
+        self.board = Board()
+        self.game_logic = GameLogic(self.board)
+        self.selected_piece = None
+        self.game_logic.assign_random_ability() # Asignar habilidad para el primer turno
+
     def render(self):
         """Dibuja todos los elementos del juego en la pantalla."""
         self.screen.fill(config.BLACK) # Limpia la pantalla
         
         # Dibuja los componentes de la UI
-        draw_top_bar(self.screen, self.game_logic)
+        # Guardamos los rects de los botones de acción que se dibujan en la barra superior
+        self.action_buttons_rects = draw_top_bar(self.screen, self.game_logic)
         draw_board(self.screen, self.board_colors)
 
         # Dibuja un aviso si el rey del turno actual está en jaque

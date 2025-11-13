@@ -2,6 +2,27 @@
 
 Este documento describe la estructura y los componentes necesarios para desarrollar un juego de ajedrez con habilidades especiales para las piezas utilizando la librería Pygame en Python.
 
+## 7. Estado Actual del Proyecto (Fase de Desarrollo Activa) - sqlite implementacion: 
+ Persistencia de Datos con SQLite
+
+Se ha integrado una base de datos SQLite para permitir a los jugadores guardar, cargar y reiniciar partidas, mejorando significativamente la experiencia de juego.
+
+*   **Botones en la Interfaz:** Se han añadido botones de "Guardar", "Cargar" y "Reiniciar" en la barra de información superior para un acceso rápido y fácil.
+*   **Guardado de Datos del Juego (Implementado):**
+    *   **Estado del Tablero:** La posición de cada pieza, su color, si se ha movido y qué habilidad especial posee (si la tiene) se almacena en la base de datos.
+    *   **Turno Actual:** El sistema guarda de quién es el turno (`'white'` o `'black'`) para que la partida se reanude exactamente donde se dejó.
+*   **Carga de Datos del Juego (Implementado):** Al cargar, el juego reconstruye el tablero y restaura el turno, permitiendo continuar una partida guardada previamente.
+*   **Reinicio de Partida:** El botón "Reiniciar" permite empezar una nueva partida desde cero en cualquier momento.
+
+#### Aplicación Futura de SQLite
+
+La base de datos actual sienta las bases para futuras expansiones:
+
+*   **Guardado de Configuración (No implementado):** La estructura puede ampliarse para guardar las preferencias del usuario, como los colores del tablero seleccionados, para que se carguen automáticamente al iniciar el juego.
+*   **Datos del Jugador (No implementado):** Se podría crear una nueva tabla para almacenar perfiles de jugadores, incluyendo nombres, estadísticas de victorias/derrotas y un historial de partidas.
+*   **Múltiples Partidas Guardadas (No implementado):** La funcionalidad actual utiliza un único slot de guardado rápido ("quicksave"). En el futuro, se podría implementar un sistema para que los jugadores nombren y gestionen múltiples archivos de guardado.
+
+
 ## 6. Estado Actual del Proyecto (Fase de Desarrollo Activa)
 
 El juego se encuentra en una etapa funcional donde las mecánicas principales están implementadas y se están añadiendo características avanzadas y habilidades especiales.
