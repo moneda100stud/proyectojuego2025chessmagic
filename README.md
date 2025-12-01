@@ -63,22 +63,42 @@ pip install pygame
 Una buena organización del código es clave para un proyecto manejable. Se recomienda la siguiente estructura:
 
 /
--├── main.py             # Punto de entrada principal, contiene el bucle del juego.
-+├── pygame juego proyecto.py # Punto de entrada principal, contiene el bucle del juego.
-├── board.py            # Clase para gestionar el tablero, su estado y las piezas.
-├── config.py           # Constantes y variables de configuración.
-├── pieces.py           # Clases para cada tipo de pieza (Peón, Torre, etc.) y su lógica.
-├── game_logic.py       # Lógica de turnos, jaque, jaque mate y activación de habilidades.
-├── ui.py               # Funciones o clases para dibujar la interfaz (tablero, menús, botones).
-+├── database.py         # Módulo para la interacción con la base de datos SQLite.
+├── pygame juego proyecto.py # Punto de entrada principal, contiene el bucle del juego.
+├── board.py                 # Clase para gestionar el tablero, su estado y las piezas.
+├── config.py                # Constantes y variables de configuración.
+├── pieces.py                # Clases para cada tipo de pieza (Peón, Torre, etc.) y su lógica.
+├── game_logic.py            # Lógica de turnos, jaque, jaque mate y activación de habilidades.
+├── ui.py                    # Funciones o clases para dibujar la interfaz (tablero, menús, botones).
+├── database.py              # Módulo para la interacción con la base de datos SQLite.
 └── assets/
-    ├── images/         # Directorio para las imágenes de las piezas, tablero, etc.
--    │   ├── white_pawn.png
--    │   ├── black_king.png
--    │   └── ...
--    └── sounds/         # (Opcional) Directorio para efectos de sonido.
-+└── sounds/
-+└── video UL/
+    ├── images/              # Directorio para las imágenes de las piezas, tablero, etc.
+    └── sounds/              # Directorio para efectos de sonido.
+    └── video UL/            # (Asumiendo que es un directorio para archivos de video)
+    
+    
+Descripción de Componentes :
+
+pygame juego proyecto.py: El punto de entrada principal. Aquí se inicializa Pygame y se contiene el bucle principal del juego.
+
+board.py: Contiene la lógica para la clase que maneja el estado del tablero, las posiciones y la interacción general.
+
+config.py: Almacena constantes (tamaños, colores, etc.) y variables de configuración global.
+
+pieces.py: Define las clases para cada pieza de ajedrez (o del juego) y su lógica de movimiento específica.
+
+game_logic.py: Maneja las reglas de turnos, condiciones de victoria (jaque/jaque mate) y cualquier lógica compleja del juego.
+
+ui.py: Dedicado a todo lo relacionado con el dibujo de la interfaz gráfica, menús y elementos visuales.
+
+database.py: Módulo para la persistencia de datos (por ejemplo, guardar puntuaciones o estados del juego) utilizando SQLite.
+
+assets/: Un directorio para todos los recursos externos.
+
+assets/images/: Para archivos gráficos como sprites de piezas y el tablero.
+
+assets/sounds/: Para efectos de sonido y música.
+
+assets/video UL/: Para almacenar archivos de video, si son necesarios para el proyecto.
 
 
 ## 4. Componentes Clave del Código
@@ -127,7 +147,5 @@ Es importante tener en cuenta que la primera versión del proyecto se centrará 
 - **No habrá un oponente de IA:** El juego está diseñado para dos jugadores locales en el mismo ordenador.
 - **Sin modo multijugador en red:** No se implementará la funcionalidad para jugar en línea.
 - **Reglas complejas:** Inicialmente, es posible que no se implementen todas las reglas especiales del ajedrez, como la captura *al paso* (en passant), el enroque o la promoción del peón. Estas se pueden añadir en futuras iteraciones.
-- **No se guardarán partidas:** No habrá una función para guardar el estado de una partida y reanudarla más tarde.
-- **Condiciones de Fin de Partida:** Aún falta por implementar la lógica de Jaque Mate y Tablas (Stalemate).
 
 Con esta estructura, podrás desarrollar tu juego de manera ordenada y modular, lo que facilitará la implementación de nuevas características y la depuración de errores. ¡Mucho éxito con tu proyecto!
