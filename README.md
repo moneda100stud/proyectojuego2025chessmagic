@@ -147,5 +147,3 @@ Es importante tener en cuenta que la primera versión del proyecto se centrará 
 - **No habrá un oponente de IA:** El juego está diseñado para dos jugadores locales en el mismo ordenador.
 - **Sin modo multijugador en red:** No se implementará la funcionalidad para jugar en línea.
 - **Reglas complejas:** Inicialmente, es posible que no se implementen todas las reglas especiales del ajedrez, como la captura *al paso* (en passant), el enroque o la promoción del peón. Estas se pueden añadir en futuras iteraciones.
-
-Con esta estructura, podrás desarrollar tu juego de manera ordenada y modular, lo que facilitará la implementación de nuevas características y la depuración de errores. ¡Mucho éxito con tu proyecto!
