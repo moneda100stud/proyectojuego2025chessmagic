@@ -61,7 +61,7 @@ pip install pygame
 ## 3. Estructura de Archivos Sugerida
 
 Una buena organización del código es clave para un proyecto manejable. Se recomienda la siguiente estructura:
-
+```
 /
 ├── pygame juego proyecto.py # Punto de entrada principal, contiene el bucle del juego.
 ├── board.py                 # Clase para gestionar el tablero, su estado y las piezas.
@@ -74,7 +74,7 @@ Una buena organización del código es clave para un proyecto manejable. Se reco
     ├── images/              # Directorio para las imágenes de las piezas, tablero, etc.
     └── sounds/              # Directorio para efectos de sonido.
     └── video UL/            # (Asumiendo que es un directorio para archivos de video)
-    
+```   
     
 Descripción de Componentes :
 
