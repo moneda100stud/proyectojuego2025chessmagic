@@ -1,0 +1,96 @@
+=========================================================
+    LÓGICA COMPLETA DEL PROYECTO: CHESSMAGIC
+=========================================================
+
+Este documento ofrece una explicación técnica detallada de la arquitectura y los algoritmos que componen el juego "ChessMagic", sirviendo como una referencia para el desarrollo y la comprensión del código fuente.
+
+-------------------------------------------------
+SECCIÓN 1: ESTRUCTURA GENERAL Y FLUJO DEL PROGRAMA
+-------------------------------------------------
+El corazón del juego reside en la clase `Game` dentro de `pygame juego proyecto.py`. Esta clase actúa como el orquestador principal.
+
+### 1.1. Inicialización (`Game.__init__`)
+Al iniciar, la clase `Game` prepara todo el entorno:
+1.  **Inicia Pygame y la Ventana:** Prepara los módulos de Pygame y crea la ventana principal del juego.
+2.  **Define Estados de Juego:** Inicializa el estado del juego en `'MENU'`, preparando la pantalla de inicio.
+3.  **Instancia Componentes Clave:**
+    *   `Board()`: Crea el tablero lógico y posiciona las piezas iniciales.
+    *   `GameLogic(self.board)`: Crea el gestor de reglas, pasándole una referencia al tablero que controlará.
+4.  **Prepara la UI:** Inicializa variables para el estado de la UI, como los colores del tablero y los rectángulos para la paleta de colores.
+5.  **Inicializa la Base de Datos y Carga de Recursos:** Llama a `database.init_db()` y a `load_menu_resources()` para preparar la base de datos, cargar la música de fondo y los fotogramas del vídeo del menú.
+
+### 1.2. Bucle Principal (`Game.run`)
+Es un bucle `while` que constituye el "latido" del juego. Se ejecuta continuamente hasta que `self.running` es `False`. En cada iteración (fotograma), sigue un ciclo de tres pasos:
+1.  **Gestión de Estados:** El bucle comprueba el estado actual (`self.game_state`):
+    *   Si es `'MENU'`, llama a los métodos para gestionar y renderizar el menú principal.
+    *   Si es `'PLAYING'`, llama a los métodos del ciclo de juego (`update`, `handle_game_events`, `render_game`).
+    *   Si es `'INFO'`, gestiona los eventos para cerrar el pop-up de información.
+2.  **Ciclo de Juego (`PLAYING`):**
+    *   **`update()`:** Actualiza los cronómetros de los jugadores si el modo de juego es `'timed'`.
+    *   **`handle_game_events()`:** Procesa la cola de eventos de Pygame. Su principal responsabilidad es detectar clics del ratón y llamar a `handle_mouse_click`.
+    *   **`render_game()`:** Dibuja el estado actual del juego en la pantalla. Es crucial el orden de dibujado para la correcta superposición: Fondo -> Tablero -> Auras (Jaque/Habilidad) -> Piezas -> UI (iconos, texto). Un efecto de sonido se dispara tras un movimiento exitoso.
+
+### 1.3. Lógica de Clic (`Game.handle_mouse_click`)
+Este es uno de los métodos más complejos. Sigue un orden de prioridad para determinar qué se ha clicado:
+1.  **UI Inferior (Iconos y Paleta):**
+    *   **Iconos de Acción:** Comprueba si el clic fue en alguno de los iconos de la cuadrícula (Guardar, Cargar, Reiniciar, Menú, Info). Si es así, ejecuta la acción correspondiente y termina.
+    *   **Paleta y Botón de Color:** Comprueba si el clic fue en la paleta de colores o en el botón "Cambiar Color". Si es así, actualiza el estado de la UI y termina.
+2.  **Tablero:** Si no se hizo clic en ninguna parte de la UI, se asume que fue en el tablero. Aquí se despliega la lógica de selección y movimiento de piezas.
+
+---------------------------------
+SECCIÓN 2: LÓGICA DEL TABLERO Y PIEZAS
+---------------------------------
+
+### 2.1. Representación del Tablero (`board.py`)
+La clase `Board` contiene el estado fundamental del juego.
+*   **`self.board`**: Es una matriz (lista de listas) de 8x8. Cada celda contiene una instancia de una clase `Piece` o el valor `None` si la casilla está vacía.
+*   **`setup_pieces()`**: Rellena la matriz con las instancias de las piezas (`Pawn`, `Rook`, etc.) en sus posiciones iniciales.
+*   **`move_piece()`**: Es el método que efectúa un movimiento. Actualiza la matriz moviendo la referencia de la pieza de su casilla de origen a la de destino y limpiando la de origen (`self.board[origen] = None`). También actualiza los atributos `row` y `col` de la propia pieza.
+
+### 2.2. Lógica de las Piezas (`pieces.py`)
+*   **Clase Base `Piece`**: Define los atributos y métodos comunes a todas las piezas: `row`, `col`, `color`, `name`, `ability`, `has_moved`.
+*   **Herencia**: Cada pieza (`Pawn`, `Knight`, etc.) hereda de `Piece` y sobrescribe el método `get_valid_moves()` para implementar su patrón de movimiento único.
+*   **Caché de Imágenes (`Piece._images`)**: Es un diccionario estático (atributo de clase). La primera vez que se necesita la imagen de una pieza (ej. "white_pawn"), se carga desde el disco, se escala y se guarda en este diccionario. Las siguientes veces que se crea un peón blanco, la imagen se recupera directamente de la memoria, evitando lecturas de disco lentas y repetitivas.
+*   **`__deepcopy__` Personalizado**: Este método es crucial para la validación de movimientos. Cuando se simula un movimiento para ver si el rey queda en jaque, se necesita una copia completa del tablero. Sin embargo, las superficies de Pygame (`self.image`, `self.rect`) no se pueden "copiar" de forma segura con `copy.deepcopy()`. Esta implementación crea una nueva pieza y copia solo los atributos lógicos (posición, color, etc.), ignorando los de Pygame. Esto hace la simulación mucho más rápida y segura.
+
+---------------------------------
+SECCIÓN 3: LÓGICA DE REGLAS Y HABILIDADES
+---------------------------------
+
+### 3.1. Gestión de Reglas (`game_logic.py`)
+La clase `GameLogic` centraliza las reglas que no son intrínsecas a una sola pieza.
+*   **`turn`**: Un simple string (`'white'` o `'black'`) que determina a quién le toca mover. `next_turn()` lo alterna.
+*   **`is_valid_move()`**: Este es el algoritmo de validación principal. Realiza dos comprobaciones clave:
+    1.  **Legalidad del Movimiento**: Llama a `piece.get_valid_moves()` para ver si el destino es un movimiento posible para esa pieza (considerando habilidades).
+    2.  **Prevención de Auto-Jaque**: Si el movimiento es legal, simula el movimiento en un tablero temporal (usando `copy.deepcopy`) y luego llama a `is_in_check()` sobre ese tablero simulado. Si el rey del jugador actual queda en jaque, el movimiento se invalida.
+*   **`is_in_check()`**: Para un color dado, encuentra a su rey. Luego, itera sobre TODAS las piezas del oponente en el tablero. Para cada pieza oponente, obtiene sus movimientos válidos y comprueba si la posición del rey está en esa lista.
+*   **`check_game_over()`**: Se llama al final de cada turno. Itera sobre todas las piezas del jugador del turno actual y todos sus movimientos válidos. Si no encuentra ningún movimiento legal (que no resulte en auto-jaque), el juego termina (Jaque Mate o Ahogado).
+*   **`check_king_capture()`**: Se llama después de cada movimiento. Comprueba si el rey del oponente ha sido eliminado del tablero. Si es así, el juego termina.
+
+### 3.2. Sistema de Habilidades
+*   **Asignación (`assign_random_ability`)**: Al final de cada turno, esta función:
+    1.  Limpia la habilidad de la pieza que la tuvo en el turno anterior.
+    2.  Obtiene una lista de todas las piezas del jugador del nuevo turno.
+    3.  Elige una pieza y una habilidad al azar de `POSSIBLE_ABILITIES`.
+    4.  Asigna el string de la habilidad al atributo `piece.ability`. La pieza se resalta con un aura de color específico para esa habilidad.
+*   **Ejecución de Habilidades**: La lógica de las habilidades se implementa principalmente en `pieces.py`, modificando el método `get_valid_moves()`:
+    *   **`omni_directional_pawn`**: El método `get_valid_moves` del peón tiene un `if self.ability == 'omni_directional_pawn':` que devuelve un patrón de movimiento completamente diferente al normal.
+    *   **`double_step_rook`**: Esta habilidad es más compleja y se gestiona en `handle_mouse_click`. Si una torre con esta habilidad se mueve, se activa un estado especial (`self.game_logic.double_step_rook_moved`). El turno no avanza, y el juego espera un segundo movimiento de la misma pieza. Tras el segundo movimiento, el estado se resetea y el turno pasa normalmente.
+
+---------------------------------
+SECCIÓN 4: LÓGICA DE PERSISTENCIA DE DATOS
+---------------------------------
+
+### 4.1. Módulo `database.py`
+Este módulo abstrae toda la comunicación con la base de datos SQLite.
+*   **`init_db()`**: Crea la tabla `game_state` si no existe. Usa `IF NOT EXISTS` para evitar errores si se ejecuta varias veces. La tabla tiene una sola fila (id=1) y columnas para el turno y el estado del tablero, implementando un sistema de "guardado rápido".
+*   **`save_game_state()`**:
+    1.  Serializa el tablero: Recorre la matriz `board.board` y convierte cada objeto `Piece` en un diccionario simple (ej. `{'type': 'pawn', 'color': 'white', ...}`).
+    2.  Convierte esta lista de listas de diccionarios a un string JSON.
+    3.  Obtiene el turno actual de `game_logic.turn`.
+    4.  Ejecuta una consulta SQL `UPDATE` para guardar el string JSON del tablero y el string del turno en la única fila de la tabla.
+*   **`load_game_state()`**:
+    1.  Ejecuta una consulta `SELECT` para leer los datos de la base de datos.
+    2.  Deserializa el string JSON del tablero para obtener la estructura de datos original (lista de listas de diccionarios).
+    3.  Llama a `board.load_from_state()`, que limpia el tablero actual y lo reconstruye pieza por pieza a partir de los diccionarios.
+    4.  Actualiza `game_logic.turn` con el valor cargado.

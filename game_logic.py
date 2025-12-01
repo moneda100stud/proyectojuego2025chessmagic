@@ -2,13 +2,11 @@
 # Descripción: Orquesta las reglas del juego, como turnos, validación de movimientos y condiciones de victoria.
 import random
 import copy
-from pieces import AreaPushKnight
 
 # Lista de habilidades disponibles en el juego
 POSSIBLE_ABILITIES = [
     'omni_directional_pawn', # Un peón que puede moverse un paso en cualquier dirección,
-    'double_step_rook',      # Una torre que puede dar un segundo paso después de moverse
-    'area_push_knight'       # Un caballo que empuja piezas a su alrededor al aterrizar (ejemplo, no implementado aún)
+    'double_step_rook'       # Una torre que puede dar un segundo paso después de moverse
 ]
 
 class GameLogic:
@@ -21,6 +19,7 @@ class GameLogic:
         self.selected_piece = None
         self.piece_with_ability = None
         self.double_step_rook_moved = None # Para rastrear la torre que acaba de moverse
+        self.game_over = False
 
     def next_turn(self):
         """Pasa al siguiente turno."""
@@ -29,7 +28,10 @@ class GameLogic:
             self.double_step_rook_moved = None
         self.turn = 'black' if self.turn == 'white' else 'white'
         
-        self.assign_random_ability()
+        if self.check_game_over():
+            self.game_over = True
+        else:
+            self.assign_random_ability()
 
     def assign_random_ability(self):
         """Asigna una habilidad aleatoria a una pieza aleatoria del jugador actual."""
@@ -71,12 +73,7 @@ class GameLogic:
             for c in range(8):
                 piece = board_to_check[r][c]
                 if piece and piece.color == opponent_color:
-                    # Para el AreaPushKnight, sus movimientos de ataque son los de un caballo normal.
-                    if isinstance(piece, AreaPushKnight):
-                        valid_moves = piece.get_valid_moves(board_to_check)
-                    else:
-                        valid_moves = piece.get_valid_moves(board_to_check)
-                    
+                    valid_moves = piece.get_valid_moves(board_to_check)
                     if (king.row, king.col) in valid_moves:
                         return True
         return False
@@ -104,6 +101,25 @@ class GameLogic:
 
         return True
 
+    def check_game_over(self):
+        """
+        Verifica si el jugador actual está en jaque mate o ahogado.
+        Devuelve True si el juego ha terminado, False en caso contrario.
+        """
+        player_pieces = [p for row in self.board.board for p in row if p and p.color == self.turn]
+
+        # Iterar sobre cada pieza del jugador del turno actual
+        for piece in player_pieces:
+            valid_moves = piece.get_valid_moves(self.board.board)
+            for move in valid_moves:
+                # Si encontramos al menos un movimiento válido, el juego no ha terminado
+                if self.is_valid_move(piece, move[0], move[1]):
+                    return False
+
+        # Si no se encontraron movimientos válidos para ninguna pieza, el juego terminó.
+        # Ahora determinamos si es jaque mate o ahogado.
+        return True
+
     def activate_ability(self, piece):
         """
         Activa la habilidad especial de una pieza.
@@ -112,3 +128,12 @@ class GameLogic:
         print(f"Habilidad de {piece} activada!")
         # Aquí se implementaría qué hace cada habilidad.
         pass
+
+    def check_king_capture(self, moved_piece_color):
+        """
+        Verifica si el rey del oponente ha sido capturado.
+        Si es así, termina el juego.
+        """
+        opponent_color = 'black' if moved_piece_color == 'white' else 'white'
+        if not self.find_king(opponent_color):
+            self.game_over = True

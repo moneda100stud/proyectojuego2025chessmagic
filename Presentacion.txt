@@ -1,0 +1,103 @@
+=================================================
+ PRESENTACIÓN: ChessMagic 
+=================================================
+
+Este documento sirve como una guía introductoria al proyecto "ChessMagic",
+explicando su jugabilidad, cómo interactuar con su interfaz y la lógica de programación
+que lo hace funcionar.
+
+
+SECCIÓN 1: JUGABILIDAD - ¿CÓMO SE GANA O PIERDE?
+------------------------------------------------
+
+El objetivo final del juego es el mismo que en el ajedrez clásico: dar **Jaque Mate** al rey del oponente. Un Jaque Mate ocurre cuando el rey de un jugador está amenazado (en Jaque) y no hay ningún movimiento legal posible para escapar de la amenaza.
+El juego también puede terminar de las siguientes maneras:
+*   **Ahogado (Stalemate):** Si a un jugador le toca mover pero no tiene ningún movimiento legal y su rey no está en jaque, la partida es un empate.
+*   **Captura del Rey:** Si un jugador captura directamente al rey enemigo, gana la partida.
+*   **Tiempo Agotado:** En el modo cronómetro, si un jugador se queda sin tiempo, pierde la partida.
+
+SECCIÓN 2: EJECUCIÓN DEL DEMO E INTERFAZ DE USUARIO (UI)
+--------------------------------------------------------
+
+### 2.1. ¿Cómo ejecutar el juego?
+
+1.  **Requisitos:** Asegúrate de tener Python y la librería Pygame instalados en tu sistema.
+2.  **Ejecución:** Abre una terminal o línea de comandos, navega hasta el directorio raíz del proyecto y ejecuta el siguiente comando:
+    ```
+    python "pygame juego proyecto.py"
+    ```
+3.  Aparecerá un menú principal con un fondo animado y música. Elige un modo de juego para comenzar.
+
+### 2.2. Explicación de la Interfaz
+
+La interfaz está dividida en tres secciones principales:
+
+**A. Barra Superior (Información):**
+*   **Centro:** Muestra la información más relevante de la partida.
+    *   **Turno:** Indica qué jugador debe mover (`Turno: White` o `Turno: Black`).
+    *   **Habilidad Activa:** Anuncia qué pieza del jugador actual ha recibido una habilidad especial para ese turno.
+*   **Esquina Superior Izquierda:** Muestra el cronómetro del jugador negro (solo en modo cronómetro).
+
+**B. Tablero Central (Área de Juego):**
+*   Es el tablero de 8x8 donde se desarrolla la acción.
+*   **Indicadores Visuales:**
+    *   **Aura de Habilidad:** Una pieza rodeada por un aura de color (azul o verde) es la que posee la habilidad especial del turno.
+    *   **Aura Roja:** Un rey rodeado por un aura roja indica que está en Jaque (amenazado por una pieza enemiga).
+
+**C. Barra Inferior (Personalización):**
+*   **Lado Izquierdo:**
+    *   **Paleta de Colores:** Muestra varios pares de colores. Puedes hacer clic en cualquiera de ellos para seleccionarlo.
+    *   **Botón "Cambiar Color":** Tras seleccionar un par de colores de la paleta, haz clic en este botón para aplicar los nuevos colores al tablero.
+    *   **Cronómetro Blanco:** Debajo de la paleta, muestra el tiempo restante para el jugador blanco (solo en modo cronómetro).
+*   **Lado Derecho:**
+    *   **Iconos de Acción:** Una cuadrícula de iconos para gestionar la partida:
+        *   **S (Guardar):** Guarda el estado actual del juego.
+        *   **L (Cargar):** Carga la última partida guardada.
+        *   **R (Reiniciar):** Comienza una partida nueva.
+        *   **M (Menú):** Vuelve al menú principal.
+        *   **? (Info):** Muestra una ventana con la descripción de las habilidades.
+
+
+SECCIÓN 3: LÓGICA, ALGORITMO Y FLUJO DEL JUEGO
+------------------------------------------------
+
+El flujo del programa se gestiona principalmente en el archivo `pygame juego proyecto.py` y se apoya en los módulos `game_logic.py`, `board.py` y `pieces.py`.
+
+### 3.1. Flujo General
+
+1.  **Inicialización (`Game.__init__`):**
+    *   Se inicia Pygame y se prepara la ventana del juego.
+    *   El estado del juego se establece en `'MENU'`, y se cargan los recursos visuales y de audio para la pantalla de inicio.
+
+2.  **Bucle Principal del Juego (`Game.run`):**
+    *   El juego entra en un bucle que se repite 60 veces por segundo (FPS).
+    *   Dependiendo del estado del juego (`'MENU'`, `'PLAYING'`, `'INFO'`), se ejecutan diferentes lógicas de eventos y renderizado.
+    *   En el estado `'PLAYING'`, el ciclo es:
+        1.  **Actualización (`update`):** Actualiza los cronómetros si el modo es `'timed'`.
+        2.  **Manejo de Eventos (`handle_game_events`):** Escucha las acciones del usuario (clics del ratón).
+        3.  **Renderizado (`render_game`):** Dibuja todos los elementos en pantalla.
+
+### 3.2. Algoritmo de un Turno (Lógica del Clic)
+
+Cuando un jugador hace clic, el método `handle_mouse_click` sigue esta lógica:
+
+1.  **Clic en la UI:** Primero, comprueba si el clic fue en un icono de acción o en la paleta de colores. Si es así, ejecuta la acción correspondiente y termina.
+
+2.  **Clic en el Tablero:** Si el clic fue en el tablero, se calcula la fila y columna.
+    *   **Si no hay pieza seleccionada:**
+        *   Verifica si en la casilla clicada hay una pieza.
+        *   Si la pieza pertenece al jugador del turno actual (`piece.color == game_logic.turn`), esa pieza se convierte en la `selected_piece`.
+    *   **Si ya hay una pieza seleccionada (`selected_piece`):**
+        *   **Clic en pieza aliada:** Si el nuevo clic es sobre otra pieza del mismo color, se cambia la selección a esta nueva pieza.
+        *   **Clic en casilla vacía o enemiga (Intento de movimiento):**
+            a.  Se llama a `game_logic.is_valid_move(pieza, fila, columna)`.
+            b.  **Validación de Movimiento (`is_valid_move`):** Este es el algoritmo de reglas clave.
+                i.  Primero, obtiene los movimientos básicos de la pieza desde su clase (ej. `Pawn.get_valid_moves`). Esto incluye movimientos normales y los modificados por habilidades (como el `omni_directional_pawn`).
+                ii. Si el movimiento está en esa lista, se procede a la validación de Jaque: se crea una copia temporal del tablero, se simula el movimiento y se usa la función `is_in_check` para ver si el rey del propio jugador quedaría amenazado.
+                iii. Si el rey no queda en jaque, el movimiento es válido.
+            c.  **Si el movimiento es válido:**
+                i.  Se mueve la pieza en el tablero (`board.move_piece`) y se reproduce un efecto de sonido.
+                ii. Se comprueba si el movimiento resultó en la captura del rey o en Jaque Mate/Ahogado para el oponente.
+                iii. Si el juego no ha terminado, se pasa al siguiente turno (`game_logic.next_turn`), lo que cambia el color del jugador y asigna una nueva habilidad aleatoria.
+                iv. Se deselecciona la pieza.
+            d.  **Si el movimiento no es válido:** La pieza se deselecciona.

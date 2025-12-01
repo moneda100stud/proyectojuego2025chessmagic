@@ -1,60 +1,57 @@
-# Proyecto: Ajedrez con Habilidades (Pygame)
+# Proyecto: ChessMagic (Pygame)
 
-Este documento describe la estructura y los componentes necesarios para desarrollar un juego de ajedrez con habilidades especiales para las piezas utilizando la librería Pygame en Python.
+**ChessMagic** es una variante estratégica del ajedrez clásico desarrollada en Python con la librería Pygame. El juego introduce un sistema de habilidades especiales que se asignan aleatoriamente a las piezas, añadiendo una capa de imprevisibilidad y nuevas tácticas a cada partida.
 
-## 7. Estado Actual del Proyecto (Fase de Desarrollo Activa) - sqlite implementacion: 
- Persistencia de Datos con SQLite
+## 1. Características Principales
 
-Se ha integrado una base de datos SQLite para permitir a los jugadores guardar, cargar y reiniciar partidas, mejorando significativamente la experiencia de juego.
+El juego se encuentra en una fase funcional y robusta, con las siguientes características implementadas:
 
-*   **Botones en la Interfaz:** Se han añadido botones de "Guardar", "Cargar" y "Reiniciar" en la barra de información superior para un acceso rápido y fácil.
-*   **Guardado de Datos del Juego (Implementado):**
-    *   **Estado del Tablero:** La posición de cada pieza, su color, si se ha movido y qué habilidad especial posee (si la tiene) se almacena en la base de datos.
-    *   **Turno Actual:** El sistema guarda de quién es el turno (`'white'` o `'black'`) para que la partida se reanude exactamente donde se dejó.
-*   **Carga de Datos del Juego (Implementado):** Al cargar, el juego reconstruye el tablero y restaura el turno, permitiendo continuar una partida guardada previamente.
-*   **Reinicio de Partida:** El botón "Reiniciar" permite empezar una nueva partida desde cero en cualquier momento.
+### Motor de Ajedrez
+- **Reglas Clásicas:** Movimiento estándar para todas las piezas (Peón, Torre, Caballo, Alfil, Reina, Rey).
+- **Sistema de Turnos:** Alternancia correcta entre el jugador de piezas blancas y negras.
+- **Lógica de Captura:** Las piezas pueden capturar a las del oponente.
+- **Reglas Avanzadas:**
+  - **Detección de Jaque (Check):** El sistema detecta y avisa visualmente cuando un rey está amenazado.
+  - **Prevención de Movimientos Ilegales:** Un jugador no puede realizar un movimiento que deje a su propio rey en jaque.
+  - **Condiciones de Fin de Partida:** El juego concluye correctamente al detectar **Jaque Mate**, **Ahogado** (empate) o por **captura directa del rey**.
 
-#### Aplicación Futura de SQLite
+### Sistema de Habilidades Especiales
+- **Asignación Aleatoria:** Al comienzo de cada turno, una pieza aleatoria del jugador activo recibe una habilidad especial.
+- **Indicadores Visuales:** La pieza con habilidad se resalta con un aura de color distintivo para su fácil identificación.
+- **Habilidades Implementadas:**
+  - **`Omni-Directional Pawn`**: Un peón que puede moverse y capturar una casilla en cualquiera de las 8 direcciones.
+  - **`Double-Step Rook`**: Una torre que, tras su primer movimiento, puede realizar un segundo movimiento de forma inmediata.
 
-La base de datos actual sienta las bases para futuras expansiones:
+### Modos de Juego
+- **Menú Principal Dinámico:** Al iniciar, el jugador es recibido con un menú con fondo de vídeo animado, música y un título con colores neón que cambian con el tiempo.
+- **Modo Clásico:** Partida de ajedrez tradicional por turnos, sin límite de tiempo.
+- **Modo Cronómetro:** Cada jugador dispone de un tiempo limitado (10 minutos). La partida termina si un jugador agota su tiempo.
 
-*   **Guardado de Configuración (No implementado):** La estructura puede ampliarse para guardar las preferencias del usuario, como los colores del tablero seleccionados, para que se carguen automáticamente al iniciar el juego.
-*   **Datos del Jugador (No implementado):** Se podría crear una nueva tabla para almacenar perfiles de jugadores, incluyendo nombres, estadísticas de victorias/derrotas y un historial de partidas.
-*   **Múltiples Partidas Guardadas (No implementado):** La funcionalidad actual utiliza un único slot de guardado rápido ("quicksave"). En el futuro, se podría implementar un sistema para que los jugadores nombren y gestionen múltiples archivos de guardado.
+### Interfaz de Usuario (UI) y Experiencia (UX)
+- **Diseño Moderno:** La interfaz está organizada en barras superior e inferior para una visualización limpia de la información.
+  - **Barra Superior:** Muestra el turno actual, la habilidad activa y el cronómetro del jugador negro.
+  - **Barra Inferior:** Contiene la paleta de colores y el botón "Cambiar Color" a la izquierda, el cronómetro del jugador blanco, y una cuadrícula de iconos de acción a la derecha.
+- **Personalización del Tablero:** El jugador puede cambiar los colores del tablero en tiempo real usando la paleta de colores.
+- **Iconos de Acción:** Una cuadrícula compacta de iconos (3x2) permite un acceso rápido a las funciones principales:
+  - **S (Guardar):** Guarda el estado actual de la partida.
+  - **L (Cargar):** Carga la última partida guardada.
+  - **R (Reiniciar):** Inicia una nueva partida.
+  - **M (Menú):** Vuelve al menú principal.
+  - **? (Info):** Abre una ventana emergente que explica las habilidades disponibles.
 
+### Audio Inmersivo
+- **Música de Fondo:** Pistas de música diferentes para el menú principal y para las partidas, con transiciones suaves entre ellas.
+- **Efectos de Sonido:** Se reproduce un efecto de sonido al mover una pieza, mejorando la retroalimentación al jugador.
 
-## 6. Estado Actual del Proyecto (Fase de Desarrollo Activa)
+### Persistencia de Datos
+- **Guardado y Carga:** Gracias a la integración con **SQLite**, los jugadores pueden guardar una partida en curso y cargarla más tarde, preservando el estado del tablero, el turno y las habilidades.
 
-El juego se encuentra en una etapa funcional donde las mecánicas principales están implementadas y se están añadiendo características avanzadas y habilidades especiales.
-
-### Características Implementadas
-
-- **Motor de Ajedrez Básico:**
-  - Tablero 8x8 completamente funcional.
-  - Movimiento estándar para todas las piezas (Peón, Torre, Caballo, Alfil, Reina, Rey).
-  - Sistema de turnos para Blanco y Negro.
-  - Lógica de captura de piezas.
-- **Sistema de Habilidades Especiales:**
-  - Cada turno, una pieza aleatoria del jugador actual recibe una habilidad especial.
-  - **Habilidades Funcionales:**
-    - `Omni-Directional Pawn`: Un peón que puede moverse un paso en cualquier dirección.
-    - `Double-Step Rook`: Una torre que puede realizar un segundo movimiento inmediatamente después del primero.
-    - `Area Push Knight`: Un caballo que, al aterrizar, empuja las piezas enemigas adyacentes.
-- **Reglas de Ajedrez Avanzadas:**
-  - **Detección de Jaque (Check):** El sistema previene que un jugador realice un movimiento que deje a su propio rey en jaque.
-- **Interfaz de Usuario (UI):**
-  - Visualización del turno actual y de la habilidad activa.
-  - Indicador visual (aura amarilla) sobre la pieza que posee la habilidad.
-  - Indicador visual (aura roja) sobre el rey cuando está en jaque.
-  - Paleta de colores para personalizar la apariencia del tablero en tiempo real.
-
-## 1. Descripción del Juego
-
-El proyecto consiste en crear un juego de ajedrez por turnos para dos jugadores. La principal característica que lo diferenciará del ajedrez tradicional es que algunas o todas las piezas tendrán "habilidades especiales" que podrán ser activadas durante la partida, añadiendo una capa extra de estrategia.
+### Portabilidad
+- **Rutas Relativas:** Todas las rutas a los recursos del juego (imágenes, sonidos, fotogramas de vídeo) son relativas. Esto asegura que el proyecto se pueda ejecutar en cualquier ordenador sin necesidad de modificar el código.
 
 ## 2. Requisitos
 
-Para poder ejecutar el proyecto, necesitarás tener instalado Python y la librería Pygame.
+Para poder ejecutar el proyecto, necesitarás tener **Python** y la librería **Pygame** instalados.
 
 ```bash
 # Instalar Pygame
@@ -65,21 +62,24 @@ pip install pygame
 
 Una buena organización del código es clave para un proyecto manejable. Se recomienda la siguiente estructura:
 
-```
 /
-├── main.py             # Punto de entrada principal, contiene el bucle del juego.
+-├── main.py             # Punto de entrada principal, contiene el bucle del juego.
++├── pygame juego proyecto.py # Punto de entrada principal, contiene el bucle del juego.
 ├── board.py            # Clase para gestionar el tablero, su estado y las piezas.
 ├── config.py           # Constantes y variables de configuración.
 ├── pieces.py           # Clases para cada tipo de pieza (Peón, Torre, etc.) y su lógica.
 ├── game_logic.py       # Lógica de turnos, jaque, jaque mate y activación de habilidades.
 ├── ui.py               # Funciones o clases para dibujar la interfaz (tablero, menús, botones).
++├── database.py         # Módulo para la interacción con la base de datos SQLite.
 └── assets/
     ├── images/         # Directorio para las imágenes de las piezas, tablero, etc.
-    │   ├── white_pawn.png
-    │   ├── black_king.png
-    │   └── ...
-    └── sounds/         # (Opcional) Directorio para efectos de sonido.
-```
+-    │   ├── white_pawn.png
+-    │   ├── black_king.png
+-    │   └── ...
+-    └── sounds/         # (Opcional) Directorio para efectos de sonido.
++└── sounds/
++└── video UL/
+
 
 ## 4. Componentes Clave del Código
 

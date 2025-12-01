@@ -1,0 +1,87 @@
+=================================================
+        EXPLICACIÓN DEL ALGORITMO DEL JUEGO
+=================================================
+
+Este documento detalla la lógica de programación, el flujo y los algoritalos que
+controlan el funcionamiento del juego "ChessMagic".
+
+El flujo del programa se gestiona principalmente en el archivo `pygame juego proyecto.py`
+y se apoya en los módulos `game_logic.py`, `board.py` y `pieces.py`.
+
+---------------------------------
+1. FLUJO GENERAL DEL PROGRAMA
+---------------------------------
+
+El juego sigue un patrón de ejecución estándar para aplicaciones interactivas.
+
+### 1.1. Inicialización (`Game.__init__`)
+
+Al ejecutar el juego, se realizan los siguientes pasos de configuración inicial:
+1.  **Inicio de Pygame:** Se inicializa la librería y se crea la ventana principal del juego.
+2.  **Estado de Menú:** El juego se inicia en el estado `'MENU'`, mostrando una pantalla para que el jugador elija el modo de juego.
+3.  **Inicio de Partida (`start_game`):** Una vez que el jugador elige un modo:
+    a.  Se instancia un objeto `Board`, que crea la matriz 8x8 y coloca las piezas.
+    b.  Se crea un objeto `GameLogic`, que gestionará los turnos y las reglas.
+    c.  Se detiene la música del menú y se inicia la música de la partida.
+    d.  Se inicializa la base de datos (`database.init_db()`).
+    e.  Se asigna la primera habilidad aleatoria a una pieza blanca.
+    f.  El estado del juego cambia a `'PLAYING'`.
+
+### 1.2. Bucle Principal del Juego (`Game.run`)
+
+Una vez inicializado, el juego entra en un bucle infinito que se ejecuta a una tasa fija (60 FPS). El bucle gestiona diferentes estados:
+
+1.  **Estado `MENU`:**
+    *   Se gestionan los clics en los botones de modo de juego y la animación del título.
+    *   Se renderiza el fondo de vídeo animado y la interfaz del menú.
+
+2.  **Estado `PLAYING`:**
+    *   **Actualización de Estado (`update`):** Se actualizan los cronómetros si se está en modo `'timed'`.
+    *   **Manejo de Eventos (`handle_game_events`):**
+    *   El programa escucha continuamente las acciones del usuario.
+    *   Los eventos principales son el cierre de la ventana (`pygame.QUIT`) y los clics del ratón (`pygame.MOUSEBUTTONDOWN`).
+    *   Si se detecta un clic, se llama al método `handle_mouse_click` para procesarlo.
+    *   **Renderizado (`render_game`):**
+    *   Se encarga de dibujar todo en la pantalla en cada fotograma. El orden de dibujado es importante para la correcta superposición de elementos: fondo, tablero, auras (jaque, habilidad), piezas y finalmente la interfaz de usuario (botones, texto).
+
+---------------------------------
+2. ALGORITMO DE UN TURNO (LÓGICA DEL CLIC)
+---------------------------------
+
+El método `handle_mouse_click` contiene el algoritmo principal que define la interacción del jugador con el juego. Sigue una secuencia de decisiones jerárquica:
+
+1.  **¿Clic en la Interfaz de Usuario (UI)?**
+    *   El algoritmo comprueba primero si la posición del clic colisiona con alguno de los rectángulos de los iconos de acción o la paleta de colores en la barra inferior.
+    *   Si hay colisión, se ejecuta la acción correspondiente (ej. `database.save_game_state()` o cambiar el color del tablero) y la función termina inmediatamente para no procesar el clic como una acción en el tablero.
+
+2.  **¿Clic en el Tablero?**
+    *   Si el clic no fue en la UI, se comprueba si ocurrió dentro de los límites del tablero. Si no, se ignora.
+    *   Si el clic fue en el tablero, se convierten las coordenadas de píxeles del ratón a coordenadas de fila y columna del tablero.
+
+3.  **Lógica de Selección y Movimiento:**
+    *   **Caso A: No hay pieza seleccionada (`selected_piece` es `None`).**
+        a. Se comprueba si hay una pieza en la casilla clicada.
+        b. Si la pieza existe y su color coincide con el del jugador del turno actual (`piece.color == game_logic.turn`), dicha pieza se almacena en la variable `selected_piece`.
+
+    *   **Caso B: Ya hay una pieza seleccionada (`selected_piece` no es `None`).**
+        a. **Intento de cambio de selección:** Si el nuevo clic es sobre otra pieza del mismo color, se actualiza `selected_piece` para que sea esta nueva pieza.
+        b. **Intento de movimiento:** Si el clic es en una casilla vacía o sobre una pieza enemiga, se inicia el proceso de validación de movimiento:
+            i. Se llama a `game_logic.is_valid_move(selected_piece, fila, columna)`.
+            ii. **Dentro de `is_valid_move` (Algoritmo de Validación):**
+                - Primero, se obtienen todos los movimientos "potenciales" de la pieza (`piece.get_valid_moves`), que ya considera las habilidades especiales (ej. `omni_directional_pawn`).
+                - Si el movimiento solicitado no está en esa lista, se considera inválido y se retorna `False`.
+                - Si está en la lista, se realiza una **simulación de jaque**:
+                    1. Se crea una copia profunda (`deepcopy`) del tablero en memoria.
+                    2. Se simula el movimiento en esta copia.
+                    3. Se llama a la función `is_in_check` sobre el tablero copiado para verificar si el rey del jugador actual quedaría amenazado.
+                    4. Si el rey queda en jaque, el movimiento es ilegal, se retorna `False`.
+                - Si ninguna de las comprobaciones anteriores falla, el movimiento es válido y se retorna `True`.
+            iii. **Resultado de la validación:**
+                - **Si `is_valid_move` retorna `True`:**
+                    1. Se ejecuta el movimiento en el tablero real (`board.move_piece`). La habilidad de la pieza se elimina (excepto en casos especiales como `double_step_rook`).
+                    2. Se reproduce un efecto de sonido. Se comprueba si el movimiento capturó al rey enemigo (`check_king_capture`). Si es así, el juego termina.
+                    3. Si el juego no ha terminado, se avanza al siguiente turno (`game_logic.next_turn`).
+                    4. `next_turn` comprueba si el nuevo jugador está en Jaque Mate o Ahogado (`check_game_over`). Si es así, el juego termina.
+                    5. Si el juego continúa, se asigna una nueva habilidad aleatoria.
+                    6. Se limpia la selección (`selected_piece = None`).
+                - **Si `is_valid_move` retorna `False`:** El movimiento es inválido, por lo que simplemente se limpia la selección (`selected_piece = None`) y se espera la siguiente acción del jugador.

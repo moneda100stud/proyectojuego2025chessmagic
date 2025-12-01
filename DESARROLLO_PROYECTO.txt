@@ -1,7 +1,7 @@
-DESARROLLO DEL PROYECTO: AJEDREZ CON HABILIDADES
+DESARROLLO DEL PROYECTO: CHESSMAGIC
 ================================================
 
-Este documento detalla el estado de desarrollo actual del proyecto "Ajedrez con Habilidades",
+Este documento detalla el estado de desarrollo actual del proyecto "ChessMagic",
 un juego de ajedrez por turnos para dos jugadores locales implementado en Python con la librería Pygame.
 
 
@@ -31,37 +31,50 @@ El juego se encuentra en una fase funcional, con las siguientes características
 
 *   **Detección de Jaque (Check):** El juego es capaz de detectar si un rey está bajo amenaza (en jaque).
 *   **Prevención de Movimientos Ilegales:** Un jugador no puede realizar un movimiento que deje a su propio rey en jaque. El sistema bloquea dichos movimientos.
+*   **Detección de Fin de Partida:** El juego ahora concluye correctamente al detectar Jaque Mate, Ahogado (empate) o si un rey es capturado directamente.
 
 ### 2.3. Sistema de Habilidades Especiales
 
 El núcleo innovador del proyecto ya está en funcionamiento:
 
 *   **Asignación Aleatoria:** Al comienzo de cada turno, el sistema asigna automáticamente una habilidad especial a una pieza aleatoria del jugador actual.
+*   **Indicadores Visuales de Habilidad:** La pieza que tiene la habilidad activa se resalta con un aura de color distintivo (ej. azul para el peón, verde para la torre), permitiendo al jugador identificarla fácilmente.
 *   **Habilidades Funcionales:**
     *   **Omni-Directional Pawn:** Un peón con esta habilidad puede moverse y capturar en cualquiera de las 8 direcciones adyacentes (un solo paso).
     *   **Double-Step Rook:** Una torre que, tras realizar su primer movimiento, puede moverse una segunda vez de forma inmediata.
-    *   **Area Push Knight:** Un caballo que, al aterrizar en su casilla de destino, empuja a todas las piezas enemigas adyacentes una casilla más lejos. Si una pieza es empujada fuera del tablero, es capturada.
 
 ### 2.4. Interfaz de Usuario (UI) y Experiencia de Juego (UX)
 
-Se ha desarrollado una interfaz gráfica que proporciona información clave al jugador:
+Se ha desarrollado una interfaz gráfica completa y moderna:
 
-*   **Barra de Información Superior:** Muestra de forma clara el turno actual (Blancas o Negras) y la habilidad especial que está activa, incluyendo qué tipo de pieza la posee.
-*   **Indicadores Visuales de Habilidad:** La pieza que tiene la habilidad activa se resalta con un aura amarilla, permitiendo al jugador identificarla fácilmente.
+*   **Pantalla de Menú Principal Dinámica:** Al iniciar, el jugador es recibido con una pantalla de menú con un fondo de vídeo animado, música de fondo y un título con colores neón que cambian con el tiempo.
+    *   **Modos de Juego:** Se puede elegir entre "Modo Clásico" (sin tiempo) y "Modo Cronómetro" (10 minutos por jugador).
+*   **Diseño de la Pantalla de Juego:**
+    *   **Barra Superior:** Muestra el turno actual, la habilidad activa y el cronómetro del jugador negro (en modo cronómetro).
+    *   **Barra Inferior:** Contiene la paleta de colores y el botón "Cambiar Color" a la izquierda, el cronómetro del jugador blanco (en modo cronómetro) y una cuadrícula de iconos de acción en la esquina inferior derecha.
 *   **Indicador de Jaque:** Cuando un rey está en jaque, se muestra un aura roja sobre él como advertencia visual.
 *   **Personalización del Tablero:** Se ha añadido una paleta de colores en la parte inferior de la pantalla. El jugador puede seleccionar un par de colores y hacer clic en "Cambiar Color" para personalizar la apariencia del tablero en tiempo real.
+*   **Ventana de Información:** Un icono de '?' abre una ventana emergente que explica las habilidades disponibles en el juego.
+*   **Portabilidad:** Todas las rutas a los recursos (imágenes, sonidos, vídeo) se han hecho relativas, permitiendo que el proyecto se ejecute en cualquier ordenador sin necesidad de modificar el código.
 
 
 ### 2.5. Persistencia de Datos con SQLite
 
 Se ha integrado una base de datos SQLite para permitir a los jugadores guardar, cargar y reiniciar partidas, mejorando significativamente la experiencia de juego.
 
-*   **Botones en la Interfaz:** Se han añadido botones de "Guardar", "Cargar" y "Reiniciar" en la barra de información superior para un acceso rápido y fácil.
+*   **Iconos de Acción:** Se ha implementado una cuadrícula de iconos en la esquina inferior derecha para un acceso rápido a las funciones de "Guardar" (S), "Cargar" (L), "Reiniciar" (R), "Menú" (M) e "Info" (?).
 *   **Guardado de Datos del Juego (Implementado):**
     *   **Estado del Tablero:** La posición de cada pieza, su color, si se ha movido y qué habilidad especial posee (si la tiene) se almacena en la base de datos.
     *   **Turno Actual:** El sistema guarda de quién es el turno (`'white'` o `'black'`) para que la partida se reanude exactamente donde se dejó.
 *   **Carga de Datos del Juego (Implementado):** Al cargar, el juego reconstruye el tablero y restaura el turno, permitiendo continuar una partida guardada previamente.
 *   **Reinicio de Partida:** El botón "Reiniciar" permite empezar una nueva partida desde cero en cualquier momento.
+
+### 2.6. Sistema de Audio
+
+Se ha implementado un sistema de audio para mejorar la inmersión:
+
+*   **Música de Fondo:** El juego cuenta con pistas de música separadas para el menú principal y para las partidas, con transiciones suaves entre ellas.
+*   **Efectos de Sonido:** Se reproduce un efecto de sonido cada vez que un jugador mueve una pieza, proporcionando retroalimentación auditiva.
 
 #### Aplicación Futura de SQLite
 
@@ -91,11 +104,11 @@ SECCIÓN 4: LIMITACIONES ACTUALES Y PRÓXIMOS PASOS
 
 El proyecto se encuentra en desarrollo activo y tiene las siguientes limitaciones a tener en cuenta:
 
-*   **Condiciones de Fin de Partida:** Aún no se ha implementado la lógica para detectar el Jaque Mate (Checkmate) o el Ahogado (Stalemate). La partida continúa indefinidamente.
-*   **Reglas Especiales Faltantes:** No se han implementado reglas como el enroque (castling), la captura al paso (en passant) o la promoción del peón.
+*   **Reglas Especiales de Ajedrez:** Aún no se han implementado reglas complejas como el enroque (castling), la captura al paso (en passant) o la promoción del peón.
 *   **Modo de Juego:** El juego es exclusivamente para dos jugadores locales. No hay inteligencia artificial (IA) como oponente ni modo multijugador en red.
+*   **Errores y Descartes:** Durante el desarrollo, se descartaron ideas como la habilidad `area_push_knight` por su complejidad. La interfaz de usuario pasó por varias iteraciones (botones de texto, menú desplegable) hasta llegar al diseño actual de iconos para solucionar problemas de solapamiento y mejorar la estética.
 
-Los próximos pasos se centrarán en implementar las condiciones de fin de partida y añadir las reglas especiales restantes para completar la experiencia de ajedrez.
+Los próximos pasos se centrarán en añadir las reglas especiales restantes y, potencialmente, una IA básica.
 
 
 SECCIÓN 5: VIDEO DE DEMOSTRACIÓN

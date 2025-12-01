@@ -2,7 +2,7 @@
 # Descripción: Define la clase base Piece y las clases para cada tipo de pieza.
 import pygame
 import os
-from config import SQUARE_SIZE, ASSETS_PATH, TOP_UI_HEIGHT
+from config import SQUARE_SIZE, ASSETS_PATH, TOP_UI_HEIGHT, ABILITY_COLORS
 import copy
 
 class Piece:
@@ -45,7 +45,8 @@ class Piece:
         """Dibuja la pieza en la pantalla."""
         # Dibuja un aura si la pieza tiene una habilidad
         if self.ability:
-            aura_color = (255, 223, 0, 100) # Amarillo dorado semi-transparente
+            # Obtiene el color de la habilidad o usa el color por defecto si no se encuentra
+            aura_color = ABILITY_COLORS.get(self.ability, ABILITY_COLORS['default'])
             aura_surface = pygame.Surface((SQUARE_SIZE, SQUARE_SIZE), pygame.SRCALPHA)
             pygame.draw.circle(aura_surface, aura_color, (SQUARE_SIZE // 2, SQUARE_SIZE // 2), SQUARE_SIZE // 2)
             screen.blit(aura_surface, self.rect.topleft)
@@ -144,10 +145,9 @@ class Rook(Piece):
                     break
         return moves        # Si la torre tiene la habilidad 'double_step_rook'
 
-class Knight(Piece): # La clase AreaPushKnight sobrescribe este __init__ si se usa.
+class Knight(Piece):
     def __init__(self, row, col, color):
         super().__init__(row, col, color, 'knight')
-
 
     def get_valid_moves(self, board):
         moves = []
@@ -162,61 +162,6 @@ class Knight(Piece): # La clase AreaPushKnight sobrescribe este __init__ si se u
                 if target is None or target.color != self.color:
                     moves.append((r, c))
         return moves
-
-
-class AreaPushKnight(Knight):
-    def __init__(self, row, col, color):
-        super().__init__(row, col, color)
-        self.ability = 'area_push_knight'
-
-    def get_valid_moves_with_ability(self, board): # Renombrado para evitar ocultar el método base
-        # Obtiene los movimientos normales del caballo
-        normal_moves = super().get_valid_moves(board)
-        return normal_moves
-
-    def activate_ability(self, board, target_row, target_col):
-        """Activa la habilidad 'area_push_knight'. Empuja piezas enemigas adyacentes a la casilla de destino del caballo."""
-        print(f"Habilidad 'Area Push' activada por el caballo en ({self.row}, {self.col}) hacia ({target_row}, {target_col})!")
-
-        # Definir el área de efecto alrededor de la casilla de destino
-        # Por ejemplo, un cuadrado de 3x3 centrado en la casilla de destino
-        push_radius = 1
-
-        for r_offset in range(-push_radius, push_radius + 1):
-            for c_offset in range(-push_radius, push_radius + 1):
-                if r_offset == 0 and c_offset == 0:
-                    continue # No empujar la casilla donde aterriza el caballo
-
-                affected_row, affected_col = target_row + r_offset, target_col + c_offset
-
-                # Asegurarse de que la casilla afectada esté dentro del tablero
-                if 0 <= affected_row < 8 and 0 <= affected_col < 8:
-                    piece_to_push = board[affected_row][affected_col]
-
-                    # Si hay una pieza enemiga en la casilla afectada
-                    if piece_to_push and piece_to_push.color != self.color:
-                        print(f"Empujando pieza enemiga: {piece_to_push.name} en ({affected_row}, {affected_col})")
-
-                        # Determinar la dirección de empuje (alejándose de la casilla de destino del caballo)
-                        push_dr = affected_row - target_row
-                        push_dc = affected_col - target_col
-
-                        new_row, new_col = affected_row + push_dr, affected_col + push_dc
-
-                        # Comprobar si la nueva posición está dentro del tablero
-                        if 0 <= new_row < 8 and 0 <= new_col < 8:
-                            # Si la casilla de destino del empuje está vacía
-                            if board[new_row][new_col] is None:
-                                print(f"Pieza empujada a ({new_row}, {new_col})")
-                                # Mover la pieza
-                                board[affected_row][affected_col] = None
-                                board[new_row][new_col] = piece_to_push
-                                piece_to_push.row, piece_to_push.col = new_row, new_col
-                                piece_to_push.calculate_pixel_pos()
-                        else:
-                            # La pieza es empujada fuera del tablero y es capturada
-                            print(f"Pieza empujada fuera del tablero desde ({affected_row}, {affected_col})")
-                            board[affected_row][affected_col] = None
 
 class Bishop(Piece):
     def __init__(self, row, col, color):
