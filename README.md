@@ -1,4 +1,4 @@
-# Proyecto: ChessMagic (Pygame)
+# Proyecto: ChessMagic (Pygame) - LUIS ALFONSO SANTACRUZ MONEDA - 5SS - Graficación - 2025
 
 **ChessMagic** es una variante estratégica del ajedrez clásico desarrollada en Python con la librería Pygame. El juego introduce un sistema de habilidades especiales que se asignan aleatoriamente a las piezas, añadiendo una capa de imprevisibilidad y nuevas tácticas a cada partida.
 
