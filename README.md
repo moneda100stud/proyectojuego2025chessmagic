@@ -3,7 +3,7 @@
 **ChessMagic** es una variante estratégica del ajedrez clásico desarrollada en Python con la librería Pygame. El juego introduce un sistema de habilidades especiales que se asignan aleatoriamente a las piezas, añadiendo una capa de imprevisibilidad y nuevas tácticas a cada partida.
 
 para una informacion mas completa y profunda pueden ir al wiki profundo de este repositorio : 
-https://deepwiki.com/moneda100stud/proyectojuego2025chessmagic/1.1-getting-started
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/moneda100stud/proyectojuego2025chessmagic)
 ACONTINUACION SE HABLARA DE LAS CARACTERISTICAS Y PARTICULARIDADES DE ESTE REPOSITORIO Y PROYECTO PARA LAS PARTES MAS ESENCIALES :
 
 ## 1. Características Principales
